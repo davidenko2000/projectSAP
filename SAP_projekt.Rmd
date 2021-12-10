@@ -18,17 +18,140 @@ dim(whr2021)
 
 #promjena imena stupaca 
 ```{r}
-colnames(whr2020) <- c("Country name", "Regional indicator", "Ladder score", "Logged GDP per capita", "Soical support", "Healthy life expectancy", "Freedom to make life choices", "Generosity", "Perceptions of corruption") 
+colnames(whr2020) <- c("Country name", "Regional indicator", "Ladder score", "Logged GDP per capita", "Social support", "Healthy life expectancy", "Freedom to make life choices", "Generosity", "Perceptions of corruption") 
 
-colnames(whr2021) <- c("Country name", "Regional indicator", "Ladder score", "Logged GDP per capita", "Soical support", "Healthy life expectancy", "Freedom to make life choices", "Generosity", "Perceptions of corruption", "Income Gini", "Wealth Gini") 
+colnames(whr2021) <- c("Country name", "Regional indicator", "Ladder score", "Logged GDP per capita", "Social support", "Healthy life expectancy", "Freedom to make life choices", "Generosity", "Perceptions of corruption", "Income Gini", "Wealth Gini") 
 names(whr2020)
 names(whr2021)
 ```
+##Deskriptivna statistika nad rezultatima grupiranih zemalja po regijama
 
+Izračunajmo srednje vrijednosti i medijane Ladder score-ova po regijama.
 ```{r}
-summary(whr2020[, 3:9])
+library(tidyverse)
+
+whr2021 %>% group_by(`Regional indicator`) %>% summarise(
+          Mean.LadderScore = mean(`Ladder score`),
+          Mean.GDP = mean(`Logged GDP per capita`),
+          Mean.SocialSupport = mean(`Social support`),
+          Mean.LifeExp = mean(`Healthy life expectancy`),
+          Mean.Freedom = mean(`Freedom to make life choices`),
+          Mean.Generosity = mean(Generosity),
+          Mean.Corruption = mean(`Perceptions of corruption`)
+           #Mean.IncomeGini = mean(`Income Gini`),
+           #Mean.WealthGini = mean(`Wealth Gini`)
+            ) -> summary.result1
+summary.result1
+
+
+whr2021 %>% group_by(`Regional indicator`) %>% summarise(
+          Med.LadderScore = median(`Ladder score`),
+          Med.GDP = median(`Logged GDP per capita`),
+          Med.SocialSupport = median(`Social support`),
+          Med.LifeExp = median(`Healthy life expectancy`),
+          Med.Freedom = median(`Freedom to make life choices`),
+          Med.Generosity = median(Generosity),
+          Med.Corruption = median(`Perceptions of corruption`)
+            ) -> summary.result2
+summary.result2
+```
+Histogram Ladder score-ova:
+```{r}
+h = hist(whr2021$`Ladder score`,
+         main="Ladder score histogram",
+         xlab="Ladder score",
+         ylab='Frequency',
+         col="blue"
+         )
+```
+
+Možemo li iz dijagrama raspršenja možda naslutiti kakvu vezu između Ladder score i GDP per capita?
+Posebno ćemo istaknuti regije na dijagramu.
+
+!ISKORISTITI KOD HIPOTEZA!
+```{r}
+# Ne razlikujemo vrste regija:
+plot(whr2021$`Ladder score`,whr2021$`Logged GDP per capita`,
+     col="blue",
+     xlab='Ladder score',
+     ylab='Logged GDP per capita')
+
+# Razlikujemo vrste regija:
+plot(whr2021$`Ladder score`[whr2021$`Regional indicator`=='Central and Eastern Europe'],
+     whr2021$`Logged GDP per capita`[whr2021$`Regional indicator`=='Central and Eastern Europe'],
+     col='blue',
+     xlim=c(min(whr2021$`Ladder score`),max(whr2021$`Ladder score`)),
+     ylim=c(min(whr2021$`Logged GDP per capita`),max(whr2021$`Logged GDP per capita`)),
+     xlab='Ladder score',
+     ylab='Logged GDP per capita')
+
+points(whr2021$`Ladder score`[whr2021$`Regional indicator`=='Western Europe'],
+     whr2021$`Logged GDP per capita`[whr2021$`Regional indicator`=='Western Europe'],col='red')
+points(whr2021$`Ladder score`[whr2021$`Regional indicator`=='Sub-Saharan Africa'],
+     whr2021$`Logged GDP per capita`[whr2021$`Regional indicator`=='Sub-Saharan Africa'],col='green')
+```
+##Jesu li ljudi u Zapadnoj Europi sretniji od ljudi u Srednjoj i Istočnoj Europi?
+```{r}
+western_europe = whr2021[whr2021$`Regional indicator` == "Western Europe",]
+central_eastern_europe = whr2021[whr2021$`Regional indicator` == "Central and Eastern Europe",]
 ```
 
 ```{r}
-summary(whr2021[, 3:11])
+cat('Prosječan Ladder score zemalja iz Zapadne Europe ', mean(western_europe$`Ladder score`),'\n')
+cat('Prosječan Ladder score zemalja iz Srednje i Istočne Europe', mean(central_eastern_europe$`Ladder score`), '\n')
+```
+Histogrami za za Zapadnu i Centralnu/Istočnu Europu:
+```{r}
+h = hist(western_europe$`Ladder score`,
+         main="Ladder score Western Europe",
+         xlab="Ladder score",
+         ylab='Frequency',
+         col="blue",
+         breaks = 20
+         )
+
+h = hist(central_eastern_europe$`Ladder score`,
+         main="Ladder score Central and Eastern Europe",
+         xlab="Ladder score",
+         ylab='Frequency',
+         col="blue",
+         breaks = 20
+         )
+```
+Pravokutni dijagram za Zapadnu i Centralnu/Istočnu Europu:
+```{r}
+boxplot(western_europe$`Ladder score`,central_eastern_europe$`Ladder score`,
+        main='Ladder score box-plot',
+        ylab='Ladder score', xlab="Regional indicator", names = c("Western Europe", "Central and Eastern Europe"))
+```
+
+Usporedba između Zapadne i Srednje/Istočne Europe (bar plot):
+```{r}
+h1 = hist(central_eastern_europe$`Ladder score`,
+         plot=FALSE)
+h1 = hist(western_europe$`Ladder score`,
+         plot=FALSE)
+data <- t(cbind(h1$counts,h2$counts))
+barplot(data,beside=TRUE, col=c("lightblue", "lightgreen"), xlab="Ladder score", ylab='Frequency',)
+legend("topleft",c("Central and Eastern Europe","Western Europe"),fill = c("lightblue","lightgreen"))
+```
+Postoje indikacije da bi ljudi iz zemalja Zapadne Europe trebali biti sretniji od ljudi iz zemalja Srednje i Istočne Europe.
+
+Ovakvo ispitivanje možemo provesti t-testom. Kako bi mogli provesti test, moramo najprije provjeriti pretpostavke normalnosti i nezavisnosti uzorka. Obzirom da razmatramo dva uzoraka iz dvije različite regije, možemo pretpostaviti njihovu nezavisnost. Sljedeći korak je provjeriti normalnost podataka koju ćemo provjeriti qq-plotom i KS testom.
+```{r}
+qqnorm(western_europe$`Ladder score`, pch = 1, frame = FALSE,main='Western Europe')
+qqline(western_europe$`Ladder score`, col = "steelblue", lwd = 2)
+
+qqnorm(central_eastern_europe$`Ladder score`, pch = 1, frame = FALSE,main='Central and Eastern Europe')
+qqline(central_eastern_europe$`Ladder score`, col = "steelblue", lwd = 2)
+```
+
+```{r}
+ks.test(western_europe$`Ladder score`, "pnorm")
+ks.test(central_eastern_europe$`Ladder score`, "pnorm")
+```
+Iz ovih rezultata proizlazi da podaci ne dolaze iz normalne distribucije. Trebat ćemo koristiti neku funkciju da bi transformirali podatke te nakon toga provesti test.
+
+```{r}
+
 ```
