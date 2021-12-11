@@ -124,17 +124,6 @@ boxplot(western_europe$`Ladder score`,central_eastern_europe$`Ladder score`,
         main='Ladder score box-plot',
         ylab='Ladder score', xlab="Regional indicator", names = c("Western Europe", "Central and Eastern Europe"))
 ```
-
-Usporedba između Zapadne i Srednje/Istočne Europe (bar plot):
-```{r}
-h1 = hist(central_eastern_europe$`Ladder score`,
-         plot=FALSE)
-h1 = hist(western_europe$`Ladder score`,
-         plot=FALSE)
-data <- t(cbind(h1$counts,h2$counts))
-barplot(data,beside=TRUE, col=c("lightblue", "lightgreen"), xlab="Ladder score", ylab='Frequency',)
-legend("topleft",c("Central and Eastern Europe","Western Europe"),fill = c("lightblue","lightgreen"))
-```
 Postoje indikacije da bi ljudi iz zemalja Zapadne Europe trebali biti sretniji od ljudi iz zemalja Srednje i Istočne Europe.
 
 Ovakvo ispitivanje možemo provesti t-testom. Kako bi mogli provesti test, moramo najprije provjeriti pretpostavke normalnosti i nezavisnosti uzorka. Obzirom da razmatramo dva uzoraka iz dvije različite regije, možemo pretpostaviti njihovu nezavisnost. Sljedeći korak je provjeriti normalnost podataka koju ćemo provjeriti qq-plotom i KS testom.
@@ -145,13 +134,86 @@ qqline(western_europe$`Ladder score`, col = "steelblue", lwd = 2)
 qqnorm(central_eastern_europe$`Ladder score`, pch = 1, frame = FALSE,main='Central and Eastern Europe')
 qqline(central_eastern_europe$`Ladder score`, col = "steelblue", lwd = 2)
 ```
-
+Iz ovih rezultata proizlazi da podaci ne dolaze iz normalne distribucije. Trebat ćemo koristiti neku funkciju da bi transformirali podatke te nakon toga provesti test.
 ```{r}
 ks.test(western_europe$`Ladder score`, "pnorm")
 ks.test(central_eastern_europe$`Ladder score`, "pnorm")
 ```
-Iz ovih rezultata proizlazi da podaci ne dolaze iz normalne distribucije. Trebat ćemo koristiti neku funkciju da bi transformirali podatke te nakon toga provesti test.
+<!-- Vinko i Marta od tu nadalje -->
+
+# Usporedba razina sreće u 2020. i 2021. godini.
+
+Pravokutni dijagram Ladder score-ova za 2020. i 2021. godinu.
+
+```{r, echo = FALSE}
+boxplot(whr2020$`Ladder score`, whr2021$`Ladder score`,
+        main = 'Ladder score box-plot by year',
+        xlab = 'Year', ylab = 'Ladder score', names = c('2020', '2021'))
+```
+
+Provest ćemo test o jednakosti aritmetičkih sredina za različite godine.
+Hipoteze su: \
+H~0~: aritmetičke sredine su jednake \
+H~1~: aritemetičke sredine nisu jednake
+
+
+
+Prije provedbe t-testa provjeravamo pretpostavke normalnosti uzorka. S obzirom na to da razmatramo dva uzoraka iz dvije različite regije, možemo pretpostaviti njihovu nezavisnost. Normalnost podataka provjeravamo qq-plotom.
+```{r}
+qqnorm(whr2020$`Ladder score`, pch = 1, frame = FALSE,main='Western Europe')
+qqline(whr2020$`Ladder score`, col = "steelblue", lwd = 2)
+
+qqnorm(whr2021$`Ladder score`, pch = 1, frame = FALSE,main='Central and Eastern Europe')
+qqline(whr2021$`Ladder score`, col = "steelblue", lwd = 2)
+```
+QQ-plot sugerira na normalnost. 
 
 ```{r}
+t.test(whr2020$`Ladder score`, whr2021$`Ladder score`, alternative = "two.sided", var.equal = TRUE)
 
 ```
+Na temelju rezultata možemo zaključiti da su aritmetičke sredine razine sreće za dvije godine jednake.
+
+```{r, echo = FALSE}
+c1 = rgb(173,216,230,max = 255, alpha = 80, names = "lt.blue")
+c2 = rgb(255,192,203, max = 255, alpha = 80, names = "lt.pink")
+ladder2020 = whr2020$`Ladder score`
+ladder2021 = whr2021$`Ladder score`
+hist1 = hist(ladder2020, breaks = 10, plot = FALSE)
+hist2 = hist(ladder2021, breaks = 10, plot = FALSE)
+plot(hist1, col = c1, main = "Histogram of ladder score for two years", xlab = "Ladder score")
+plot(hist2, col = c2, add = TRUE)
+legend("topright",
+  legend=c('2020','2021'),
+  fill = c(c1,c2)
+)
+```
+# Ovisnost razine sreće o drugim varijablama u 2021. godini
+
+## GDP per capita
+
+Možemo li iz dijagrama raspšrenja naslutiti vezu između GDP per capita i Ladder score-a?
+
+```{r, echo = FALSE}
+plot(whr2021$`Logged GDP per capita`, whr2021$`Ladder score`,
+     col="blue",
+     xlab='Logged GDP per capita',
+     ylab='2021 Ladder score')
+```
+
+Izračunavamo koeficijente linearne regresije.
+
+```{r}
+linreg = lm(formula = whr2021$`Ladder score` ~ whr2021$`Logged GDP per capita`)
+summary(linreg)
+
+plot(whr2021$`Logged GDP per capita`, whr2021$`Ladder score`,
+     col="blue",
+     xlab='Logged GDP per capita',
+     ylab='2021 Ladder score')
+abline(linreg$coefficients[1], linreg$coefficients[2], col = "orange", lwd = 2)
+
+```
+Testiramo nezavisnost dvije varijable korištenjem t-testa: \
+H~0~: $\beta$~1~ = 0 \
+H~1~: $\beta$~1~ $\neq$ 0
