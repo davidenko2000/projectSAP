@@ -8,15 +8,21 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r}
+```{r, echo=FALSE}
 # Učitavanje podataka iz csv datoteke:
 whr2020 = read.table("WHR_2020.csv", sep = ",")
 whr2021 = read.table("WHR_2021.csv", sep = ",")
 dim(whr2020)
 dim(whr2021)
 ```
-
-#promjena imena stupaca 
+Summary podataka:
+```{r}
+print("2020: ")
+summary(whr2020[3:9])
+print("2021: ")
+summary(whr2021[3:9])
+```
+<!--promjena imena stupaca-->
 ```{r}
 colnames(whr2020) <- c("Country name", "Regional indicator", "Ladder score", "Logged GDP per capita", "Social support", "Healthy life expectancy", "Freedom to make life choices", "Generosity", "Perceptions of corruption") 
 
@@ -24,7 +30,7 @@ colnames(whr2021) <- c("Country name", "Regional indicator", "Ladder score", "Lo
 names(whr2020)
 names(whr2021)
 ```
-##Deskriptivna statistika nad rezultatima grupiranih zemalja po regijama
+# Deskriptivna statistika nad rezultatima grupiranih zemalja po regijama
 
 Izračunajmo srednje vrijednosti i medijane Ladder score-ova po regijama.
 ```{r}
@@ -160,10 +166,10 @@ H~1~: aritemetičke sredine nisu jednake
 
 Prije provedbe t-testa provjeravamo pretpostavke normalnosti uzorka. S obzirom na to da razmatramo dva uzoraka iz dvije različite regije, možemo pretpostaviti njihovu nezavisnost. Normalnost podataka provjeravamo qq-plotom.
 ```{r}
-qqnorm(whr2020$`Ladder score`, pch = 1, frame = FALSE,main='Western Europe')
+qqnorm(whr2020$`Ladder score`, pch = 1, frame = FALSE,main='Ladder score for 2020')
 qqline(whr2020$`Ladder score`, col = "steelblue", lwd = 2)
 
-qqnorm(whr2021$`Ladder score`, pch = 1, frame = FALSE,main='Central and Eastern Europe')
+qqnorm(whr2021$`Ladder score`, pch = 1, frame = FALSE,main='Ladder score for 2021')
 qqline(whr2021$`Ladder score`, col = "steelblue", lwd = 2)
 ```
 QQ-plot sugerira na normalnost. 
@@ -188,6 +194,45 @@ legend("topright",
   fill = c(c1,c2)
 )
 ```
+Spojimo podatke iz dvije godine:
+```{r}
+mergedData = merge(whr2020, whr2021, by="Country name", suffixes = c(".20",".21"))
+
+hist(mergedData$`Ladder score.20`,
+     main=paste('Histogram of ladder score in 2020'),
+     xlab='Ladder score')
+
+hist(mergedData$`Ladder score.21`,
+     main=paste('Histogram of ladder score in 2021'),
+     xlab='Ladder score')
+
+hist(mergedData$`Ladder score.20`-mergedData$`Ladder score.21`,
+     main=paste('Difference in ladder scores between two years'),
+     xlab='Ladder score')
+
+qqnorm(mergedData$`Ladder score.20`-mergedData$`Ladder score.21`, 
+       pch = 1, 
+       frame = FALSE, 
+       main=paste('QQ-plot for differences between ladder scores'))
+qqline(mergedData$`Ladder score.20`-mergedData$`Ladder score.21`, 
+       col = "steelblue", lwd = 2)
+```
+
+
+Histogram razlika nam sugerira normalnost podataka, dok iz qq-plota vidimo malo odstupanje lijevog repa. 
+Pod pretpostavkom da su podatci normalni, koristimo upareni t-test.
+
+```{r}
+t.test(mergedData$`Ladder score.20`, 
+       mergedData$`Ladder score.21`, 
+       paired = TRUE, 
+       alt = "less")
+```
+
+Jako mala p-vrijednost nam ukazuje da postoji statistički značajna razlika u "ladder score-u" u dvije godine. Postoje značajne razlike u sreći pojedinih država.
+
+
+
 # Ovisnost razine sreće o drugim varijablama u 2021. godini
 
 ## GDP per capita
@@ -217,3 +262,5 @@ abline(linreg$coefficients[1], linreg$coefficients[2], col = "orange", lwd = 2)
 Testiramo nezavisnost dvije varijable korištenjem t-testa: \
 H~0~: $\beta$~1~ = 0 \
 H~1~: $\beta$~1~ $\neq$ 0
+<!-- dodati naknadno-->
+
