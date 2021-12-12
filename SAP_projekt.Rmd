@@ -188,13 +188,12 @@ mapdata2021 = map_data("world")
 mapdata2021 = left_join(mapdata2021, data2021, by = "region")
 
 map2021 = ggplot(mapdata2021, aes(x = long, y = lat, group = group)) +
-  geom_polygon(aes(fill = `Ladder score`), color = "black", size = 0.1) +
-  scale_fill_gradient(name = "Ladder score", low = "purple", high = "yellow", na.value = "grey50") + theme(axis.text.x = element_blank(),
-                             axis.text.y = element_blank(),
-                             axis.ticks = element_blank(),
-                             axis.title.y = element_blank(),
-                             axis.title.x = element_blank(),
-                             rect = element_blank())
+  geom_polygon(aes(fill = `Ladder score`), color = "black", size = 0.1) + theme(axis.text.x = element_blank(),
+                           axis.text.y = element_blank(),
+                           axis.ticks = element_blank(),
+                           axis.title.y = element_blank(),
+                           axis.title.x = element_blank(),
+                           rect = element_blank())
 
 map2021
 
