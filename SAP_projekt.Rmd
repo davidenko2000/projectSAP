@@ -1,5 +1,6 @@
 ---
-title: "Untitled"
+title: "World Happiness Report"
+autor: "David Kerman, Marta Knežević, Vinko Sabolčec, Lorena Lazar"
 output: pdf_document
 ---
 
@@ -7,6 +8,9 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+#Opis
+Podaci kojima se bavimo u ovom projektu su dobiveni kroz ankete koje provode Gallup i Lloyd’s
+Register Foundation. Proučavat ćemo podatke iz 2020. godine koji su sadžani u 9 varijabli te podatke iz 2021. godine koji su sadržani u 11 varijabli. Temeljna varijabla je osjećaj sreće prema Cantrilovoj ljestvici gdje su ispitanici ocjenjivali zadovoljstvo vlastitog života na skali od 0 do 10. Vrijednost varijable je prosjek reprezentativnog uzorka pojedine zemlje. Uz to projekt zadrži varijable kao što su BDP po stanovniku, životni vijek, socijalna podrška, percepcija korupcije, doniranje novca u dobrotvorne svrhe, nejednakost dohotha i slično.
 
 ```{r, echo=FALSE}
 # Učitavanje podataka iz csv datoteke:
@@ -61,6 +65,8 @@ whr2021 %>% group_by(`Regional indicator`) %>% summarise(
             ) -> summary.result2
 summary.result2
 ```
+Promatrajući varijable u 2021. godini vidimo da su vrijednosti podataka u svim varijablama (osim kod varijable za percepciju korupcije") veće za Zapadnu Europu u usporedbi s Centralnom i Istočnom Europom.
+
 Histogram Ladder score-ova:
 ```{r}
 h = hist(whr2021$`Ladder score`,
@@ -145,6 +151,29 @@ Iz ovih rezultata proizlazi da podaci ne dolaze iz normalne distribucije. Trebat
 ks.test(western_europe$`Ladder score`, "pnorm")
 ks.test(central_eastern_europe$`Ladder score`, "pnorm")
 ```
+
+```{r}
+library(boot)
+
+bootFunc <- function(data,i){
+  d <- data[i,]
+  c(
+    cor(d[,1],d[,2],method="s"),
+    median(d[,1]),
+    median(d[,2])
+  )
+}
+  
+bw <- boot(western_europe[3:4], bootFunc, R = 100)
+bce <- boot(central_eastern_europe[3:4], bootFunc, R = 100)
+  
+print(bw)
+print(bce)
+  
+boot.ci(bw, index = 1)
+boot.ci(bce, index = 1)
+```
+
 <!-- Vinko i Marta od tu nadalje -->
 
 # Usporedba razina sreće u 2020. i 2021. godini.
