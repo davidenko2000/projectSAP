@@ -3,12 +3,12 @@ title: "World Happiness Report"
 autor: "David Kerman, Marta Knežević, Vinko Sabolčec, Lorena Lazar"
 output: pdf_document
 ---
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#Opis
+
+# Opis
 Podaci kojima se bavimo u ovom projektu su dobiveni kroz ankete koje provode Gallup i Lloyd’s
 Register Foundation. Proučavat ćemo podatke iz 2020. godine koji su sadžani u 9 varijabli te podatke iz 2021. godine koji su sadržani u 11 varijabli. Temeljna varijabla je osjećaj sreće prema Cantrilovoj ljestvici gdje su ispitanici ocjenjivali zadovoljstvo vlastitog života na skali od 0 do 10. Vrijednost varijable je prosjek reprezentativnog uzorka pojedine zemlje. Uz to projekt zadrži varijable kao što su BDP po stanovniku, životni vijek, socijalna podrška, percepcija korupcije, doniranje novca u dobrotvorne svrhe, nejednakost dohotha i slično.
 
@@ -20,20 +20,21 @@ dim(whr2020)
 dim(whr2021)
 ```
 Summary podataka:
-```{r}
+```{r, echo=FALSE}
 print("2020: ")
 summary(whr2020[3:9])
 print("2021: ")
 summary(whr2021[3:9])
 ```
 <!--promjena imena stupaca-->
-```{r}
+```{r, echo=FALSE}
 colnames(whr2020) <- c("Country name", "Regional indicator", "Ladder score", "Logged GDP per capita", "Social support", "Healthy life expectancy", "Freedom to make life choices", "Generosity", "Perceptions of corruption") 
 
 colnames(whr2021) <- c("Country name", "Regional indicator", "Ladder score", "Logged GDP per capita", "Social support", "Healthy life expectancy", "Freedom to make life choices", "Generosity", "Perceptions of corruption", "Income Gini", "Wealth Gini") 
 names(whr2020)
 names(whr2021)
 ```
+# Deskriptivna statistika
 Prikažimo sada histograme usporedbe varijabli za različite godine.
 ```{r}
 #histogrami varijable s obzirom na godine
@@ -52,10 +53,8 @@ plot_by_years("Perceptions of corruption", "Perceptions of corruption histogram"
 hist(whr2021$`Income Gini`, breaks=10, main="Income Gini 2021", xlab="Income Gini", ylab="Frequency",col=rgb(0,0,1,0.5))
 hist(whr2021$`Wealth Gini`, breaks=10, main="Wealth Gini 2021", xlab="Wealth Gini", ylab="Frequency",col=rgb(0,0,1,0.5))
 ```
-Iz dobivenih histograma vidljivo je da postoje promjene u varijablama za različite godine, no raspodjela podataka je veoma slična za obe godine.
+Iz dobivenih histograma vidljivo je da postoje promjene u varijablama za različite godine, no raspodjela podataka je veoma slična za obje godine.
 Također se može naslutiti da većina podataka nije normalno distribuirana.
-
-# Deskriptivna statistika nad rezultatima grupiranih zemalja po regijama
 
 Izračunajmo srednje vrijednosti i medijane Ladder score-ova po regijama.
 ```{r}
@@ -88,20 +87,10 @@ summary.result2
 ```
 Promatrajući varijable u 2021. godini vidimo da su vrijednosti podataka u svim varijablama (osim kod varijable za percepciju korupcije") veće za Zapadnu Europu u usporedbi s Centralnom i Istočnom Europom.
 
-Histogram Ladder score-ova:
-```{r}
-h = hist(whr2021$`Ladder score`,
-         main="Ladder score histogram",
-         xlab="Ladder score",
-         ylab='Frequency',
-         col="blue"
-         )
-```
-
+# Povezanost između Ladder score i Logged GDP per capita
 Možemo li iz dijagrama raspršenja možda naslutiti kakvu vezu između Ladder score i GDP per capita?
-Posebno ćemo istaknuti regije na dijagramu.
+Posebno ćemo istaknuti 3 regije na dijagramu (Zapadnu Europu, Srednju i Istočnu Europu i Sub-Saharsku Afriku).
 
-!ISKORISTITI KOD HIPOTEZA!
 ```{r}
 # Ne razlikujemo vrste regija:
 plot(whr2021$`Ladder score`,whr2021$`Logged GDP per capita`,
@@ -123,7 +112,9 @@ points(whr2021$`Ladder score`[whr2021$`Regional indicator`=='Western Europe'],
 points(whr2021$`Ladder score`[whr2021$`Regional indicator`=='Sub-Saharan Africa'],
      whr2021$`Logged GDP per capita`[whr2021$`Regional indicator`=='Sub-Saharan Africa'],col='green')
 ```
-##Jesu li ljudi u Zapadnoj Europi sretniji od ljudi u Srednjoj i Istočnoj Europi?
+Iz dijagrama raspršenja vidljiva je moguća povezanosti Ladder score s GDP per capita. Vidi se da što je veći GDP per capita, to je i razina sreće veća iskazana s Ladder score.Također vidimo da se na dijagramu razlikuju vrijednosti Zapadne, Srednje i Istočne Europe, te Sub-Saharske Afrike.
+
+## Jesu li ljudi u Zapadnoj Europi sretniji od ljudi u Srednjoj i Istočnoj Europi?
 ```{r}
 western_europe = whr2021[whr2021$`Regional indicator` == "Western Europe",]
 central_eastern_europe = whr2021[whr2021$`Regional indicator` == "Central and Eastern Europe",]
@@ -159,6 +150,10 @@ boxplot(western_europe$`Ladder score`,central_eastern_europe$`Ladder score`,
 ```
 Postoje indikacije da bi ljudi iz zemalja Zapadne Europe trebali biti sretniji od ljudi iz zemalja Srednje i Istočne Europe.
 
+Postavimo sljedeće hipoteze:
+H_0: Ladder score je jednak za Zapadnu i Srednju i Istočnu Europu
+H_1: Ladder score je veći u Zapadnoj Europi od onog u Srednjoj i Istočnoj Europi
+
 Ovakvo ispitivanje možemo provesti t-testom. Kako bi mogli provesti test, moramo najprije provjeriti pretpostavke normalnosti i nezavisnosti uzorka. Obzirom da razmatramo dva uzoraka iz dvije različite regije, možemo pretpostaviti njihovu nezavisnost. Sljedeći korak je provjeriti normalnost podataka koju ćemo provjeriti qq-plotom i KS testom.
 ```{r}
 qqnorm(western_europe$`Ladder score`, pch = 1, frame = FALSE,main='Western Europe')
@@ -167,13 +162,35 @@ qqline(western_europe$`Ladder score`, col = "steelblue", lwd = 2)
 qqnorm(central_eastern_europe$`Ladder score`, pch = 1, frame = FALSE,main='Central and Eastern Europe')
 qqline(central_eastern_europe$`Ladder score`, col = "steelblue", lwd = 2)
 ```
-Iz ovih rezultata proizlazi da podaci ne dolaze iz normalne distribucije. Trebat ćemo koristiti neku funkciju da bi transformirali podatke te nakon toga provesti test.
+Koristimo Lillieforsovu inačicu testa normalnosti jer srednju vrijednost i varijancu računamo iz uzorka.
 ```{r}
-ks.test(western_europe$`Ladder score`, "pnorm")
-ks.test(central_eastern_europe$`Ladder score`, "pnorm")
+library(nortest)
+lillie.test(western_europe$`Ladder score`)
+lillie.test(central_eastern_europe$`Ladder score`)
+```
+Iz qq-plota ne možemo zaključiti normalnost podataka. Velika p-vrijednost kod Lillieforsovog testa govori kako ne možemo odbaciti hipotezu da podaci dolaze iz normalne distribucije.
+
+Pogledajmo vrijednost varijanci oba uzorka.
+```{r}
+var(western_europe$`Ladder score`)
+var(central_eastern_europe$`Ladder score`)
+#Jesu li varijance značajno različite
+var.test(western_europe$`Ladder score`, central_eastern_europe$`Ladder score`)
 ```
 
-Pogledajmo sada distribuciju prirodnog logaritma bruto domaćeg proizvoda po stanovniku prema paritetu kupovne moći za nejednakost dohotka i nejednakost bogatstva.
+p-vrijednost od 0.2498 nam govori da ne odbacujemo hipotezu da su varijance uzoraka jednake.
+
+Provedimo sada t-test uz pretpostavku jednakosti varijanci.
+
+```{r}
+t.test(western_europe$`Ladder score`, central_eastern_europe$`Ladder score`, alt = "greater", var.equal = TRUE)
+
+```
+Zbog male p-vrijednosti možemo odbaciti hipotezu H_0 u korist alternative da je Ladder score veći u Zapadnoj Europi od onog u Srednjoj i Istočnoj Europi.
+
+# Povezanost između Logged GDP per capita i Gini koeficijenata
+
+Pogledajmo distribuciju prirodnog logaritma bruto domaćeg proizvoda po stanovniku prema paritetu kupovne moći za nejednakost dohotka i nejednakost bogatstva.
 ```{r}
 plot(whr2021$`Logged GDP per capita`, whr2021$`Income Gini`, xlab = "Logged GDP per capita", ylab = "Income Gini",
      main = "Distribucija log(BDP) u ovisnosti o nejednakosti dohotka")
@@ -182,7 +199,7 @@ plot(whr2021$`Logged GDP per capita`, whr2021$`Wealth Gini`, xlab = "Logged GDP 
 ```
 Iz grafova vidimo da podaci ne slijede lijepi linerarni trend te bi mogli pretpostaviti da ne postoji značajna zavisnost između prirodnog logaritma bruto domaćeg proizvoda po stanovniku s nejednakostima dohotka i bogatstva.
 
-Izračunajmo sada srednje vrijednosti i medijane za nejednokost bogatsva po regijama
+Izračunajmo sada srednje vrijednosti i medijane za nejednokost bogatstva po regijama:
 ```{r}
 library(tidyverse)
 
@@ -192,13 +209,18 @@ whr2021 %>% group_by(`Regional indicator`) %>% summarise(
             ) -> summary.WealthGiniRegion
 summary.WealthGiniRegion
 ```
-Primjećujemo da nedostaju podaci za neke države te zbog toga nisu prikazani rezultati za sve regije.
-Najveća razlika srednje vrijednosti i medijana vidljiva je između Istočne Azije i Jugoistočne Azije. Postoje indikacije da je nejednakosti bogatsva veća u Jugoistočnoj Aziji u odnosu na Istočnu Aziju.
+!Primjećujemo da nedostaju podaci za neke države te zbog toga nisu prikazani rezultati za sve regije.!
+
+Najveća razlika srednje vrijednosti i medijana vidljiva je između Istočne Azije i Jugoistočne Azije. Postoje indikacije da je nejednakost bogatstva veća u Jugoistočnoj Aziji u odnosu na Istočnu Aziju.
+
+##Nejednakost bogatstva Istočna Azija vs Jugoistočna Azija
 Postavimo sljedeće hipoteze:
 H_0: Nejednakost bogatstva je jednaka u Istočnoj i Jugoistočnoj Aziji
-H_1: Nejedankost bogatstva je veća u Jugoisočnoj Aziji u odnosu na Istočnu Aziju
+H_1: Nejednakost bogatstva je veća u Jugoistočnoj Aziji u odnosu na Istočnu Aziju
+
 Ovakvo ispitivanje možemo provesti t-testom. Kako bi mogli provesti test, moramo najprije provjeriti pretpostavke normalnosti i nezavisnosti uzorka. Obzirom da razmatramo uzorke država različitih regija, možemo pretpostaviti njihovu nezavisnost. Sljedeći korak je provjeriti normalnost podataka koju ćemo provjeriti qq-plotom i Lillieforsovim testom.
 ```{r}
+library(nortest)
 southeast_asia = whr2021[whr2021$`Regional indicator` == "Southeast Asia",]
 east_asia = whr2021[whr2021$`Regional indicator` == "East Asia",]
 
@@ -210,6 +232,7 @@ lillie.test(east_asia$`Wealth Gini`)
 lillie.test(southeast_asia$`Wealth Gini`)
 ```
 Iz qq-plota ne možemo pretpostaviti normalnost podataka. Velika p-vrijednost kod Lillieforsovog testa govori kako ne možemo odbaciti hipotezu da podaci dolaze iz normalne distribucije.
+
 Pogledajmo vrijednost varijanci oba uzorka.
 ```{r}
 var(east_asia$`Wealth Gini`)
@@ -224,7 +247,9 @@ Provedimo sada t-test uz pretpostavku jednakosti varijanci.
 t.test(southeast_asia$`Wealth Gini`, east_asia$`Wealth Gini`, alt = "greater", var.equal = TRUE)
 
 ```
-Zbog male p-vrijednosti možemo odbaciti hipotezu H_0 u korist altternative da je nejednakost bogatstva u Jugoistočnoj Aziji u prosjeku veća od nejednakosti bogatstva u Istočnoj Aziji.
+Zbog male p-vrijednosti možemo odbaciti hipotezu H_0 u korist alternative da je nejednakost bogatstva u Jugoistočnoj Aziji u prosjeku veća od nejednakosti bogatstva u Istočnoj Aziji.
+
+# Zastupljenost korupcije u zemljama Europe i Afrike
 
 Pokušajmo sada zaključiti nešto o korupciji. Promatrat ćemo zemlje Europe i Afrike te želimo saznati gdje je korupcija zastupljenija. Ispitat ćemo zavosnost percepcije korupcije o logaritmu BDP-a po stanovniku. 
 ```{r}
@@ -253,7 +278,7 @@ boxplot(africa$`Perceptions of corruption`,europe$`Perceptions of corruption`,
         main='Perceptions of corruption box-plot',
         ylab='Perceptions of corruption', xlab="Regional indicator", names = c("Africa", "Europe"))
 ```
-Iz histograma vidimo da je percepcija korupcije u Africi bitno veća nego u Europi. Iz drugog grafa vidimo da je logaritam BDP-a po stanovniku relativno visok za sve države Europe te neovisno o njemu ljudi različito percipiraju korupciju. Za države Afrike prevladava visok stupanj percepcije korupcije neovisno o BDP-u. Iz box-plota vidimo veliki rang podataka za Europu, no medijan je otprilike jedanak za oba kontinenta.
+Iz histograma vidimo da je percepcija korupcije u Africi bitno veća nego u Europi. Iz drugog grafa vidimo da je logaritam BDP-a po stanovniku relativno visok za sve države Europe te neovisno o njemu ljudi različito percipiraju korupciju. Za države Afrike prevladava visok stupanj percepcije korupcije neovisno o BDP-u. Iz box-plota vidimo veliki rang podataka za Europu, no medijan je otprilike jednak za oba kontinenta.
 Izračunajmo sada srednju vrijednost percepcije korupcije za Europu i Afriku.
 ```{r}
 mean_europe = mean(europe$`Perceptions of corruption`)
@@ -261,7 +286,8 @@ mean_africa = mean(africa$`Perceptions of corruption`)
 print(mean_europe)
 print(mean_africa)
 ```
-Možemo li na temelju analiza zaključiti da je percepcija korupcije manja u Europi?
+## Možemo li na temelju analiza zaključiti da je percepcija korupcije manja u Europi?
+
 Postavimo hipoteze:
 H_0: srednja vrijednost percepcije korupcije za Europu i Afriku je jednaka
 H_1: srednja vrijednost percepcije korupcije za Europu je manja od srednje vrijednosti za Afriku
@@ -280,9 +306,7 @@ Testirajmo li podatke Lillieforsovim testom dolazimo do istog zaključka.
 lillie.test(africa$`Perceptions of corruption`)
 lillie.test(europe$`Perceptions of corruption`)
 ```
-Zbog male p-vijednosti možemo odbaciti hiptezu H_0 da podaci dolaze iz normalne distibucije. Ne možemo provesiti t-test.
-
-<!-- Vinko i Marta od tu nadalje -->
+Zbog male p-vijednosti možemo odbaciti hiptezu H_0 da podaci dolaze iz normalne distibucije. Ne možemo provesti t-test. Jedan od mogućih rješenja je transformirati podatke i provesti jackknife.
 
 # Usporedba razina sreće u 2020. i 2021. godini.
 
