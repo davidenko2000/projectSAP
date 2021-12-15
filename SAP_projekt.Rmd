@@ -1,6 +1,6 @@
 ---
 title: "World Happiness Report"
-autor: "David Kerman, Marta Knežević, Vinko Sabolčec, Lorena Lazar"
+autor: "David Kerman, Lorena Lazar, Marta Knežević, Vinko Sabolčec"
 output: pdf_document
 ---
 ```{r setup, include=FALSE}
@@ -417,32 +417,56 @@ Jako mala p-vrijednost nam ukazuje da postoji statistički značajna razlika u "
 
 # Ovisnost razine sreće o drugim varijablama u 2021. godini
 
-## GDP per capita
 
-Možemo li iz dijagrama raspšrenja naslutiti vezu između GDP per capita i Ladder score-a?
+Možemo li iz dijagrama raspšrenja naslutiti vezu između varijabli iz dataset-a i Ladder score-a?
 
 ```{r, echo = FALSE}
+fitGDP = lm(whr2021$`Ladder score` ~ whr2021$`Logged GDP per capita`)
+fitHealth = lm(whr2021$`Ladder score` ~ whr2021$`Healthy life expectancy`)
+fitSocialSupport = lm(whr2021$`Ladder score` ~ whr2021$`Social support`)
+fitFreedom = lm(whr2021$`Ladder score` ~ whr2021$`Freedom to make life choices`)
+fitGenerosity = lm(whr2021$`Ladder score` ~ whr2021$Generosity)
+fitCorruption = lm(whr2021$`Ladder score` ~ whr2021$`Perceptions of corruption`)
+fitIncomeGini = lm(whr2021$`Ladder score` ~ whr2021$`Income Gini`)
+fitWealthGini = lm(whr2021$`Ladder score` ~ whr2021$`Wealth Gini`)
+
 plot(whr2021$`Logged GDP per capita`, whr2021$`Ladder score`,
      col="blue",
      xlab='Logged GDP per capita',
      ylab='2021 Ladder score')
+lines(whr2021$`Logged GDP per capita`, fitGDP$fitted.values)
+
+plot(whr2021$`Healthy life expectancy`, whr2021$`Ladder score`,
+     col="blue",
+     xlab='Healthy life expectancy',
+     ylab='2021 Ladder score')
+lines(whr2021$`Healthy life expectancy`, fitHealth$fitted.values)
+
+plot(whr2021$`Social support`, whr2021$`Ladder score`,
+     col="blue",
+     xlab='Social support',
+     ylab='2021 Ladder score')
+lines(whr2021$`Social support`, fitSocialSupport$fitted.values)
+
 ```
 
 Izračunavamo koeficijente linearne regresije.
 
 ```{r}
-linreg = lm(formula = whr2021$`Ladder score` ~ whr2021$`Logged GDP per capita`)
-summary(linreg)
-
-plot(whr2021$`Logged GDP per capita`, whr2021$`Ladder score`,
-     col="blue",
-     xlab='Logged GDP per capita',
-     ylab='2021 Ladder score')
-abline(linreg$coefficients[1], linreg$coefficients[2], col = "orange", lwd = 2)
-
+summary(fitGDP)
+summary(fitHealth)
 ```
-Testiramo nezavisnost dvije varijable korištenjem t-testa: \
-H~0~: $\beta$~1~ = 0 \
-H~1~: $\beta$~1~ $\neq$ 0
-<!-- dodati naknadno-->
+``` {r visestruka regresija}
+fitGDP_WGini = lm(whr2021$`Ladder score` ~ whr2021$`Logged GDP per capita` + whr2021$`Wealth Gini`)
+fitGDP_Freedom = lm(whr2021$`Ladder score` ~ whr2021$`Logged GDP per capita` + whr2021$`Freedom to make life choices`)
 
+summary(fitGDP_WGini)
+summary(fitGDP_Freedom)
+```
+Na temelju malog povećanja vrijednosti R-squared kod regresije s varijablama GDP per capita i Wealth Gini u odnosu na vrijednost R-squared kod regresije samo s varijablom GDP per capita vidimo da su varijable jako korelirane, dok su (na temelju istog zaključka) GDP per capita i Freedom to make choices manje korelirane.
+
+```{r tražimo koje varijable najviše utječu na sreću}
+fitAll= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support` + `Healthy life expectancy` + `Freedom to make life choices` + `Generosity` + `Perceptions of corruption` + `Income Gini` + `Wealth Gini`, data = whr2021)
+summary((fitAll))
+```
+Na temelju regresije sa svim varijablama, možemo zaključiti da Social support, Freedom to make life choices i Perception of corruption najviše djeluju na osjećaj sreće.
