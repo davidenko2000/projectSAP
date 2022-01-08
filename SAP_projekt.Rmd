@@ -92,11 +92,21 @@ Možemo li iz dijagrama raspršenja možda naslutiti kakvu vezu između Ladder s
 Posebno ćemo istaknuti 3 regije na dijagramu (Zapadnu Europu, Srednju i Istočnu Europu i Sub-Saharsku Afriku).
 
 ```{r}
+fitGDP = lm(whr2021$`Ladder score` ~ whr2021$`Logged GDP per capita`)
+
+ce_europe = whr2021[whr2021$`Regional indicator` == "Central and Eastern Europe",]
+w_europe = whr2021[whr2021$`Regional indicator` == "Western Europe",]
+europe <- rbind(ce_europe, w_europe)
+
+fitGDPWestEast = lm(europe$`Ladder score` ~ europe$`Logged GDP per capita`)
+
 # Ne razlikujemo vrste regija:
 plot(whr2021$`Ladder score`,whr2021$`Logged GDP per capita`,
      col="blue",
      xlab='Ladder score',
      ylab='Logged GDP per capita')
+lines(fitGDP$fitted.values, whr2021$`Logged GDP per capita`)
+summary(fitGDP)
 
 # Razlikujemo vrste regija:
 plot(whr2021$`Ladder score`[whr2021$`Regional indicator`=='Central and Eastern Europe'],
@@ -109,10 +119,11 @@ plot(whr2021$`Ladder score`[whr2021$`Regional indicator`=='Central and Eastern E
 
 points(whr2021$`Ladder score`[whr2021$`Regional indicator`=='Western Europe'],
      whr2021$`Logged GDP per capita`[whr2021$`Regional indicator`=='Western Europe'],col='red')
-points(whr2021$`Ladder score`[whr2021$`Regional indicator`=='Sub-Saharan Africa'],
-     whr2021$`Logged GDP per capita`[whr2021$`Regional indicator`=='Sub-Saharan Africa'],col='green')
+lines(fitGDPWestEast$fitted.values, europe$`Logged GDP per capita`)
+summary(fitGDPWestEast)
+
 ```
-Iz dijagrama raspršenja vidljiva je moguća povezanosti Ladder score s GDP per capita. Vidi se da što je veći GDP per capita, to je i razina sreće veća iskazana s Ladder score.Također vidimo da se na dijagramu razlikuju vrijednosti Zapadne, Srednje i Istočne Europe, te Sub-Saharske Afrike.
+Iz dijagrama raspršenja vidljiva je moguća povezanosti Ladder score s GDP per capita. Linearnom regresijom potvrđujemo povezanost između varijabli Logged GDP per capita i Ladder score zbog značajnog R-squared.Također vidimo da se na dijagramu razlikuju vrijednosti Zapadne i Srednje i Istočne Europe.
 
 ## Jesu li ljudi u Zapadnoj Europi sretniji od ljudi u Srednjoj i Istočnoj Europi?
 ```{r}
@@ -255,11 +266,12 @@ Pokušajmo sada zaključiti nešto o korupciji. Promatrat ćemo zemlje Europe i 
 ```{r}
 ce_europe = whr2021[whr2021$`Regional indicator` == "Central and Eastern Europe",]
 w_europe = whr2021[whr2021$`Regional indicator` == "Western Europe",]
+europe <- rbind(ce_europe, w_europe)
 men_africa = whr2021[whr2021$`Regional indicator` == "Middle East and North Africa",]
 ss_africa = whr2021[whr2021$`Regional indicator` == "Sub-Saharan Africa",]
-
-europe <- rbind(ce_europe, w_europe)
 africa <- rbind(men_africa, ss_africa)
+
+
 
 plot_by_gini <- function(column, main) {
   hist(europe[[column]], breaks=30, main=main, xlab=column, ylab="Frequency", ylim = c(0,8),col=rgb(0,0,1,0.5))
@@ -418,7 +430,7 @@ Jako mala p-vrijednost nam ukazuje da postoji statistički značajna razlika u "
 # Ovisnost razine sreće o drugim varijablama u 2021. godini
 
 
-Možemo li iz dijagrama raspšrenja naslutiti vezu između varijabli iz dataset-a i Ladder score-a?
+Možemo li iz dijagrama raspršenja naslutiti vezu između varijabli iz dataset-a i Ladder score-a?
 
 ```{r, echo = FALSE}
 fitGDP = lm(whr2021$`Ladder score` ~ whr2021$`Logged GDP per capita`)
@@ -463,7 +475,7 @@ fitGDP_Freedom = lm(whr2021$`Ladder score` ~ whr2021$`Logged GDP per capita` + w
 summary(fitGDP_WGini)
 summary(fitGDP_Freedom)
 ```
-Na temelju malog povećanja vrijednosti R-squared kod regresije s varijablama GDP per capita i Wealth Gini u odnosu na vrijednost R-squared kod regresije samo s varijablom GDP per capita vidimo da su varijable jako korelirane, dok su (na temelju istog zaključka) GDP per capita i Freedom to make choices manje korelirane.
+Na temelju malog povećanja vrijednosti R-squared kod regresije s varijablama GDP per capita i Wealth Gini u odnosu na vrijednost R-squared kod regresije samo s varijablom GDP per capita vidimo da su varijable jače korelirane, dok su (na temelju istog zaključka) GDP per capita i Freedom to make choices manje korelirane.
 
 ```{r tražimo koje varijable najviše utječu na sreću}
 fitAll= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support` + `Healthy life expectancy` + `Freedom to make life choices` + `Generosity` + `Perceptions of corruption` + `Income Gini` + `Wealth Gini`, data = whr2021)
