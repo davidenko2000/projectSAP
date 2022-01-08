@@ -92,21 +92,12 @@ Možemo li iz dijagrama raspršenja možda naslutiti kakvu vezu između Ladder s
 Posebno ćemo istaknuti 3 regije na dijagramu (Zapadnu Europu, Srednju i Istočnu Europu i Sub-Saharsku Afriku).
 
 ```{r}
-fitGDP = lm(whr2021$`Ladder score` ~ whr2021$`Logged GDP per capita`)
-
+#trebalo bi i ispitat jesu li reziduali iz normalne
 ce_europe = whr2021[whr2021$`Regional indicator` == "Central and Eastern Europe",]
 w_europe = whr2021[whr2021$`Regional indicator` == "Western Europe",]
 europe <- rbind(ce_europe, w_europe)
 
 fitGDPWestEast = lm(europe$`Ladder score` ~ europe$`Logged GDP per capita`)
-
-# Ne razlikujemo vrste regija:
-plot(whr2021$`Ladder score`,whr2021$`Logged GDP per capita`,
-     col="blue",
-     xlab='Ladder score',
-     ylab='Logged GDP per capita')
-lines(fitGDP$fitted.values, whr2021$`Logged GDP per capita`)
-summary(fitGDP)
 
 # Razlikujemo vrste regija:
 plot(whr2021$`Ladder score`[whr2021$`Regional indicator`=='Central and Eastern Europe'],
