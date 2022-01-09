@@ -67,7 +67,8 @@ whr2021 %>% group_by(`Regional indicator`) %>% summarise(
           Mean.LifeExp = mean(`Healthy life expectancy`),
           Mean.Freedom = mean(`Freedom to make life choices`),
           Mean.Generosity = mean(Generosity),
-          Mean.Corruption = mean(`Perceptions of corruption`)
+          Mean.Corruption = mean(`Perceptions of corruption`),
+          Len = length(`Ladder score`)
            #Mean.IncomeGini = mean(`Income Gini`),
            #Mean.WealthGini = mean(`Wealth Gini`)
             ) -> summary.result1
@@ -522,4 +523,56 @@ Na temelju regresije sa svim varijablama, možemo zaključiti da Social support,
 fitlm= lm(`Ladder score` ~ `Social support`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
 summary((fitlm))
 ```
-Iz dobivenog modela vidimo da su R-kvadrat i F-statistika gori nego kada koristimo samo dvije ulazne varijable ("Logged GDP per capita" i "Freedom to make life choices"). 
+Iz dobivenog modela vidimo da su R-kvadrat i F-statistika gori nego kada koristimo samo dvije ulazne varijable ("Logged GDP per capita" i "Freedom to make life choices").
+
+
+# ANOVA
+```{r}
+ce_europe = whr2021[whr2021$`Regional indicator` == "Central and Eastern Europe",]
+l_america = whr2021[whr2021$`Regional indicator` == "Latin America and Caribbean",]
+e_asia = whr2021[whr2021$`Regional indicator` == "East Asia",]
+regions = whr2021[whr2021$`Regional indicator` == "Central and Eastern Europe" | whr2021$`Regional indicator` == "Latin America and Caribbean" | whr2021$`Regional indicator` == "East Asia", ]
+
+
+
+boxplot(ce_europe$`Ladder score`, l_america$`Ladder score`, e_asia$`Ladder score`)
+
+
+```
+
+
+Želimo testirati jednakost sredina razina sreće u regijama srednje i istočne Europe, Latinske Amerike i Kariba i istočne Azije. S obzirom da je pretpostavka ANOVA-e normalnost podataka, normalnost ćemo testirati Lillieforceovom inačicom KS testa.
+
+```{r}
+
+lillie.test(regions$`Ladder score`)
+lillie.test(ce_europe$`Ladder score`)
+lillie.test((l_america$`Ladder score`))
+lillie.test(e_asia$`Ladder score`)
+
+
+```
+Na temelju rezultata Lillieforceovih testova, možemo zaključiti da na razini značajnosti od 99% sve populacije dolaze iz normalne razdiobe. Nadalje, provest ćemo test homogenosti varijaci populacija:
+$$ \begin{aligned}
+  H_0 & : \sigma_1^2 = \sigma_2^2 = \sigma_3^2 \\
+  H_1 & : \neg H_0.
+\end{aligned} $$
+```{r}
+bartlett.test(regions$`Ladder score` ~ regions$`Regional indicator`)
+
+aggregate(regions$`Ladder score`, by=list(regions$`Regional indicator`), FUN=var)
+
+```
+Na temelju rezultata Bartlettovog testa, zaključujemo da su varijance populacija homogene.
+
+Provodimo test o jednakosti sredina populacija.
+$$ \begin{aligned}
+  H_0 & : \mu_1 = \mu_2 = \mu_3 \\
+  H_1 & : \neg H_0.
+\end{aligned} $$
+
+```{r}
+a = aov(regions$`Ladder score` ~ regions$`Regional indicator`)
+summary(a)
+```
+Na kraju provedenog testa, možemo zaključiti da su sredine razina sreće u prethodno navedene tri regije jednake. Na temelju rezultata testa ne možemo odbaciti hipotezu $H_0$
