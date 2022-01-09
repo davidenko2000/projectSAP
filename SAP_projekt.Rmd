@@ -495,7 +495,8 @@ lillie.test(rstandard(fitWealthGini))
 ```{r echo=FALSE}
 knitr::include_graphics("linRegJed.png")
 ```
-Prema vrijednostima R-kvadrat i F-statistike kao tri najznačajnija regresora su redom "Logged GDP per capita", "Healthy life expectancy" i "Social support". Varijabla "Generosity" se pokazala kao najmanje značajna te ju vjeroatno ni nećemo koristiti u višestrukoj linearnoj regresiji. 
+Prema vrijednostima R-kvadrat i F-statistike kao tri najznačajnija regresora su redom "Logged GDP per capita", "Healthy life expectancy" i "Social support". Varijabla "Generosity" se pokazala kao najmanje značajna te ju vjeroatno ni nećemo koristiti u višestrukoj linearnoj regresiji.
+
 Prije nego što krenemo s višestukom linearnom regresijom moramo provjeriti korelaciju među ulaznim varijablama.
 ```{r fig.width = 10, fig.height= 10, warning=FALSE, message=FALSE}
 library("corrplot")
@@ -504,22 +505,62 @@ num <- cor(korelacija)
 corrplot(num, method="number")
 ```
 Varijabla "Logged GDP per capita" koja je u jednostavnoj linearnoj regresiji bila najznačajnija je jako korelirana s druge dvije najznačajnije ("Social support" i "Healthy life expectancy"). Zbog toga pri izgradnji modela višestruke linearne regresije ne smijemo koristiti sve 3 navedene varijable. Pokušajmo izgraditi model tako da R-kvadrat i F-statistika budu najveći. Primjetimo također da za Gini nedostaju neki podatci pa nam ova funkcija ne izračunava korelaciju.
-``` {r visestruka regresija}
-fitGDP_WGini = lm(whr2021$`Ladder score` ~ whr2021$`Logged GDP per capita` + whr2021$`Wealth Gini`)
-fitGDP_Freedom = lm(whr2021$`Ladder score` ~ whr2021$`Logged GDP per capita` + whr2021$`Freedom to make life choices`)
 
-summary(fitGDP_WGini)
-summary(fitGDP_Freedom)
+Nadalje, probat ćemo iskoristiti i kategorijsku varijablu "Regional indicator", no prije moramo provjeriti:
+- radi li se o varijabli na nominalnoj ili ordinalnoj skali,
+- ima li varijabla linearan efekt na izlaznu varijablu,
+- predstavlja li određena kategorijska varijabla nešto što je određenom metričkom varijablom već predstavljeno.
+
+U slučaju varijable "Regional indicator", ona je na nominalnoj skali,te nije predstavljena nekom metričkom varijablom. Za provjeru linearanog efekta iskoristit ćemo box-plot.
+
+```{r provjera linearnosti}
+boxplot(`Ladder score`~`Regional indicator`,data=whr2021)
 ```
-Na temelju malog povećanja vrijednosti R-squared kod regresije s varijablama GDP per capita i Wealth Gini u odnosu na vrijednost R-squared kod regresije samo s varijablom GDP per capita vidimo da su varijable jače korelirane, dok su (na temelju istog zaključka) GDP per capita i Freedom to make choices manje korelirane.
+Iz priloženog box-plota ne vidimo neki linearan trend, te ćemo zasad zanemariti ovu varijablu.
+
 
 ```{r tražimo koje varijable najviše utječu na sreću}
 fitAll= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support` + `Healthy life expectancy` + `Freedom to make life choices` + `Generosity` + `Perceptions of corruption` + `Income Gini` + `Wealth Gini`, data = whr2021)
 summary((fitAll))
 ```
-Na temelju regresije sa svim varijablama, možemo zaključiti da Social support, Freedom to make life choices i Perception of corruption najviše djeluju na osjećaj sreće.
+Na temelju regresije sa svim varijablama, možemo zaključiti da Social support, Freedom to make life choices i Perception of corruption najviše djeluju na osjećaj sreće. Treba pronaći model koji opisuje veći postotak varijance, ali uz što manji broj regresora.
 ```{r}
-fitlm= lm(`Ladder score` ~ `Social support`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
-summary((fitlm))
+fitm1= lm(`Ladder score` ~ `Social support`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+summary((fitm1))
+
+fitm2= lm(`Ladder score` ~ `Healthy life expectancy`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+summary((fitm2))
+
+fitm3= lm(`Ladder score` ~ `Logged GDP per capita`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+summary((fitm3))
+
+fitm4= lm(`Ladder score` ~ `Logged GDP per capita` + `Healthy life expectancy`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+summary((fitm4))
+
+fitm5= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+summary((fitm5))
+
+fitm6= lm(`Ladder score` ~ `Social support` + `Healthy life expectancy`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+summary((fitm6))
+
+fitm7= lm(`Ladder score` ~ `Logged GDP per capita`+`Social support` + `Healthy life expectancy`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+summary((fitm7))
 ```
-Iz dobivenog modela vidimo da su R-kvadrat i F-statistika gori nego kada koristimo samo dvije ulazne varijable ("Logged GDP per capita" i "Freedom to make life choices"). 
+Iz priloženog vidimo, uključivši svih 5 značajnih varijabli dobivamo najveći R-squared. No, približno jednak rezultat dobivamo ako ne uključimo "Healthy life expectancy", što je posljedica koreliranosti između varijabli 
+"Logged GDP per capita", "Social support" i "Healthy life expectancy". Također uočimo da u slučaju kada koristimo "Logged GDP per capita" i "Social support" u odnosu na "Logged GDP per capita" i "Healthy life expectancy" dobivamo bolji R-squared, dok je R-squared kod jednostavne regresije pojedinačnih varijabli veći u slučaju "Healthy life expectancy" nego "Social support". Razlog opet leži u većoj koreliranosti.
+
+```{r smanjenje broja parametara}
+fit1= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+summary((fit1))
+
+fit2= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support`+`Freedom to make life choices` , data = whr2021)
+summary((fit2))
+
+fit3= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support`+ `Perceptions of corruption`, data = whr2021)
+summary((fit3))
+
+fit4= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support`, data = whr2021)
+summary((fit4))
+```
+
+Iz ovoga proizlazi da originalan model ne možemo reducirati jer gubimo u R-squared. Konačan model se sastoji od "Logged GDP per capita", "Social support", "Freedom to make life choices" i "Perceptions of corruption".
