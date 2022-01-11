@@ -566,6 +566,21 @@ summary((fit4))
 
 Iz ovoga proizlazi da originalan model ne možemo reducirati jer gubimo u R-squared. Konačan model se sastoji od "Logged GDP per capita", "Social support", "Freedom to make life choices" i "Perceptions of corruption".
 
+Pokušajmo sada u model uvrstiti varijablu "Regional indicator"(iako nismo pronašli linearan trend) koja je kategorijska.
+```{r}
+fitm8 = lm(`Ladder score` ~ `Logged GDP per capita` + `Social support` + `Freedom to make life choices`+ `Regional indicator`, data=whr2021)
+summary(fitm8)
+```
+Vidimo da R sam stvara tako zvane "dummy" varijable za kategorijsku varijablu "Regional indicator". Neke novo stvorene "dummy" varijable imaju veliku p-vrijednost što ukazuje da nisu značajne, no neke imaju malu p-vrijednost te se koeficijent determinacije povećao u usporedbi s ostalim modelima, ali se F-statistika smanjila.
+Stvorimo sada sami dummy varijable da bih mogli u modelu koristiti samo najznačajnije.
+```{r}
+require(fastDummies)
+whr2021.d = dummy_cols(whr2021,select_columns='Regional indicator')
+```
+```{r}
+fitm9 = lm(`Ladder score` ~ `Logged GDP per capita` + `Social support` + `Freedom to make life choices`+ `Regional indicator_North America and ANZ` + `Regional indicator_South Asia` + `Regional indicator_Southeast Asia`  + `Regional indicator_Western Europe` , data=whr2021.d)
+summary(fitm9)
+```
 # ANOVA
 ```{r}
 ce_europe = whr2021[whr2021$`Regional indicator` == "Central and Eastern Europe",]
