@@ -355,8 +355,8 @@ whr2021 %>%
   theme(axis.ticks.x = element_blank(),
         axis.text.x = element_blank())
 ```
-Iz priloženog box-plota ne vidimo neki linearan trend, te ćemo zasad zanemariti ovu varijablu.
 
+Iz priloženog boxplota vidimo neki linearan trend, stoga ovu varijablu možemo iskoristiti u daljnjoj analizi.
 
 ```{r tražimo koje varijable najviše utječu na sreću}
 fitAll= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support` + `Healthy life expectancy` + `Freedom to make life choices` + `Generosity` + `Perceptions of corruption` + `Income Gini` + `Wealth Gini`, data = whr2021)
@@ -409,7 +409,7 @@ Pokušajmo sada u model uvrstiti varijablu "Regional indicator"(iako nismo prona
 fitm8 = lm(`Ladder score` ~ `Logged GDP per capita` + `Social support` + `Freedom to make life choices`+ `Regional indicator`, data=whr2021)
 summary(fitm8)
 ```
-Vidimo da R sam stvara tako zvane "dummy" varijable za kategorijsku varijablu "Regional indicator". Neke novo stvorene "dummy" varijable imaju veliku p-vrijednost što ukazuje da nisu značajne, no neke imaju malu p-vrijednost te se koeficijent determinacije povećao u usporedbi s ostalim modelima, ali se F-statistika smanjila.
+Vidimo da R sam stvara takozvane "dummy" varijable za kategorijsku varijablu "Regional indicator". Neke novo stvorene "dummy" varijable imaju veliku p-vrijednost što ukazuje da nisu značajne, no neke imaju malu p-vrijednost te se koeficijent determinacije povećao u usporedbi s ostalim modelima, ali se F-statistika smanjila.
 Stvorimo sada sami dummy varijable da bih mogli u modelu koristiti samo najznačajnije.
 ```{r}
 require(fastDummies)
