@@ -72,11 +72,11 @@ map2021
 # Deskriptivna statistika
 Prikažimo sada histograme usporedbe varijabli za različite godine.
 Podaci za 2020. godinu na grafovima su prikazani crvenom bojom, a za 2021. godinu plavom. \
-```{r, fig.width=3, fig.height=3, echo=FALSE}
+```{r, fig.width=3, fig.height=2.7, echo=FALSE}
 #histogrami varijable s obzirom na godine
 plot_by_years <- function(column, main) {
-  hist(whr2021[[column]], breaks=15, main=main, xlab=column, ylab="Frequency",col=rgb(0,0,1,0.5))
-  hist(whr2020[[column]], breaks=15, main=main, xlab=column, ylab="Frequency", col=rgb(1,0,0,0.5), add=T)
+  hist(whr2021[[column]], breaks=15, main=main, cex.main=0.8, xlab=column, ylab="Frequency",col=rgb(0,0,1,0.5))
+  hist(whr2020[[column]], breaks=15, main=main, cex.main=0.8, xlab=column, ylab="Frequency", col=rgb(1,0,0,0.5), add=T)
   
 }
 plot_by_years("Ladder score", "Ladder score histogram")
@@ -93,8 +93,8 @@ hist(whr2021$`Wealth Gini`, breaks=10, main="Wealth Gini 2021", xlab="Wealth Gin
 Iz dobivenih histograma vidljivo je da postoje promjene u varijablama za različite godine, no raspodjela podataka je veoma slična za obje godine.
 Također se može naslutiti da većina podataka nije normalno distribuirana.
 
-Izračunajmo srednje vrijednosti i medijane Ladder score-ova po regijama.
 ```{r echo=FALSE, include=FALSE}
+#Izračunajmo srednje vrijednosti i medijane Ladder score-ova po regijama
 library(tidyverse)
 
 whr2021 %>% group_by(`Regional indicator`) %>% summarise(
@@ -123,12 +123,13 @@ whr2021 %>% group_by(`Regional indicator`) %>% summarise(
             ) -> summary.result2
 summary.result2
 ```
+\eject
 # Usporedba razina sreće u 2020. i 2021. godini.
 
 
 Pravokutni dijagram Ladder score-ova za 2020. i 2021. godinu.
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.height=4.2}
 boxplot(whr2020$`Ladder score`, whr2021$`Ladder score`,
         main = 'Ladder score box-plot by year',
         xlab = 'Year', ylab = 'Ladder score', names = c('2020', '2021'))
@@ -136,7 +137,7 @@ boxplot(whr2020$`Ladder score`, whr2021$`Ladder score`,
 
 
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.height=4}
 c1 = rgb(1, 0, 0, alpha = 0.5)
 c2 = rgb(0, 0, 1, alpha = 0.5)
 ladder2020 = whr2020$`Ladder score`
@@ -151,7 +152,7 @@ legend("topright",
 )
 ```
 Spojimo podatke iz dvije godine te na histogramu prikažimo razlike razina sreće za dvije godine.
-```{r}
+```{r fig.height=4}
 mergedData = merge(whr2020, whr2021, by="Country name", suffixes = c(".20",".21"))
 
 hist(mergedData$`Ladder score.20`-mergedData$`Ladder score.21`,
@@ -192,8 +193,7 @@ Jako mala p-vrijednost nam ukazuje da postoji statistički značajna razlika u "
 # Ovisnost razine sreće o drugim varijablama u 2021. godini
 
 Možemo li iz dijagrama raspršenja naslutiti vezu između varijabli iz skupa podataka i Ladder score-a?
-
-```{r, fig.width=5, fig.height=4}
+```{r, fig.width=5, fig.height=3.9}
 fitGDP = lm(whr2021$`Ladder score` ~ whr2021$`Logged GDP per capita`)
 fitHealth = lm(whr2021$`Ladder score` ~ whr2021$`Healthy life expectancy`)
 fitSocialSupport = lm(whr2021$`Ladder score` ~ whr2021$`Social support`)
@@ -223,8 +223,7 @@ lines(whr2021$`Social support`, fitSocialSupport$fitted.values)
 
 ```
 \newline
-Iz dobivenih grafova bi mogli naslutiti da postoji veza između ulaznih varijabli i izlazne. Da bi nastavili daljnju analizu potrebno je provjeriti pretpostavke modela o regresorima i rezidualima. One ne smiju biti jako narušene. Mora vrijediti normalnost reziduala i homogenost varijance te regresori ne smiju biti jako korelirani kada imamo više regresora.
-Provjerimo prvo normalnost reziduala i homogenost varijance.
+Iz dobivenih grafova bi mogli naslutiti da postoji veza između ulaznih varijabli i izlazne. Da bi nastavili daljnju analizu potrebno je provjeriti pretpostavke modela o regresorima i rezidualima. One ne smiju biti jako narušene. Mora vrijediti normalnost reziduala i homogenost varijance te regresori ne smiju biti jako korelirani kada imamo više regresora. Normalnost reziduala ćemo provjeriti grafički pomoću kvantil-kvantil plota te statistički pomoću Lillieforsove inačice KS testa normalnosti.
 ```{r}
 qqnorm(rstandard(fitGDP))
 qqline(rstandard(fitGDP))
@@ -233,7 +232,7 @@ require(nortest)
 lillie.test(rstandard(fitGDP))
 
 ```
-Iz samog prikaza reziduala, teško je doći do nekog zaključka o normalnosti. Histogrami nam prikazuju izgled distibucije reziduala te vidimo da distibucija donekle nalikuje normalnoj. Također, iz qq grafa možemo naslutiti normalnost reziduala. Velika p-vrijednost kod Lillieforsovog testa govori kako ne možemo odbaciti hipotezu da podaci dolaze iz normalne distribucije
+Iz kvantil-kvantil grafa možemo naslutiti normalnost reziduala. Velika p-vrijednost kod Lillieforsovog testa govori kako ne možemo odbaciti hipotezu da podaci dolaze iz normalne distribucije
 
 Izračunajmo sada mjere za model jednostavne linearne regresije za ulaznu varijabu "Logged GDP per capita" i izlaznu varijabu "Ladder score".
 ```{r}
@@ -271,7 +270,7 @@ korelacija <- whr2021[,(names(whr2021) %in% c("Logged GDP per capita", "Social s
 num <- cor(korelacija)
 corrplot(num, method="number")
 ```
-Varijabla "Logged GDP per capita" koja je u jednostavnoj linearnoj regresiji bila najznačajnija je jako korelirana s druge dvije najznačajnije ("Social support" i "Healthy life expectancy"). Zbog toga pri izgradnji modela višestruke linearne regresije ne smijemo koristiti sve 3 navedene varijable. Pokušajmo izgraditi model tako da R-kvadrat i F-statistika budu najveći. 
+Varijabla "Logged GDP per capita" koja je u jednostavnoj linearnoj regresiji bila najznačajnija je jako korelirana s druge dvije najznačajnije ("Social support" i "Healthy life expectancy"). Zbog toga pri izgradnji modela višestruke linearne regresije možda nije potrebno koristiti sve 3 navedene varijable. Pokušajmo izgraditi model tako da R-kvadrat i F-statistika budu najveći. 
 
 Nadalje, probat ćemo iskoristiti i kategorijsku varijablu "Regional indicator", no prije moramo provjeriti:
 - radi li se o varijabli na nominalnoj ili ordinalnoj skali,
@@ -346,6 +345,7 @@ summary(fit_reg)
 ```
 Vidimo da R sam stvara tzv. "dummy" varijable za kategorijsku varijablu "Regional indicator". Neke novo stvorene "dummy" varijable imaju veliku p-vrijednost što ukazuje da nisu značajne, no neke imaju malu p-vrijednost te se koeficijent determinacije povećao u usporedbi s ostalim modelima, ali se F-statistika smanjila.
 \eject
+
 # Postoje li razlike u iskazanoj sreći medu različitim regijama?
 
 Zanima nas ima li značajnih razlika u sredinama razina sreće u različitim regijama. Prvo ćemo usporediti razine sreće u Srednjoj i Istočnoj Europi pomoću t-testa, a zatim razine sreće u tri svjetske regije pomoću ANOVA testa.
