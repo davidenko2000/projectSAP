@@ -71,8 +71,8 @@ map2021
 
 # Deskriptivna statistika
 Prikažimo sada histograme usporedbe varijabli za različite godine.
-Podaci za 2020. godinu na grafovima su prikazani crvenom bojom, a za 2021. godinu plavom. \
-```{r, fig.width=3, fig.height=2.7, echo=FALSE}
+Podaci za 2020. godinu na grafovima su prikazani crvenom bojom, a za 2021. godinu plavom. \newline
+```{r, fig.width=2.5, fig.height=2.7, echo=FALSE}
 #histogrami varijable s obzirom na godine
 plot_by_years <- function(column, main) {
   hist(whr2021[[column]], breaks=15, main=main, cex.main=0.8, xlab=column, ylab="Frequency",col=rgb(0,0,1,0.5))
@@ -175,10 +175,10 @@ Testiramo normalnost podataka o razlici razina sreće za dvije države. Koristim
 require(nortest)
 lillie.test(mergedData$`Ladder score.20`-mergedData$`Ladder score.21`)
 ```
-Unatoč maloj p-vrijednosti Lillieforsovog testa, nastavljamo s testom o uparmin podacima, jer na razini značajnosti od 1% ipak ne možemo odbaciti hipotezu da podaci dolaze iz normalne razdiobe. Pod pretpostavkom da su podatci normalni, koristimo upareni t-test.
+Unatoč maloj p-vrijednosti Lillieforsovog testa, nastavljamo s testom o uparenim podacima, jer na razini značajnosti od 1% ipak ne možemo odbaciti hipotezu da podaci dolaze iz normalne razdiobe. Pod pretpostavkom da su podatci normalni, koristimo upareni t-test.\newline
 Postavljamo hipoteze: \
-$H_0$: $\mu_{2020}$ = $\mu_{2021}$ 
-$H_1$: $\mu_{2020}$ < $\mu_{2021}$
+          $H_0$: $\mu_{2020}$ = $\mu_{2021}$ \newline
+          $H_1$: $\mu_{2020}$ < $\mu_{2021}$
 
 ```{r}
 t.test(mergedData$`Ladder score.20`, 
@@ -187,7 +187,7 @@ t.test(mergedData$`Ladder score.20`,
        alt = "less")
 ```
 
-Jako mala p-vrijednost nam ukazuje da postoji statistički značajna razlika u "ladder score-u" u dvije godine.Na razini značajnosti od 5% možemo odbaciti hipotezu $H_0$. Postoje značajne razlike u sreći država u dvije godine tj. države u 2021. godini su sretnije nego u 2020.
+Jako mala p-vrijednost nam ukazuje da postoji statistički značajna razlika u "Ladder score-u" u dvije godine.Na razini značajnosti od 5% možemo odbaciti hipotezu $H_0$. Postoje statistički značajne razlike u sreći država u dvije godine tj. države u 2021. godini su sretnije nego u 2020.
 \eject
 
 # Ovisnost razine sreće o drugim varijablama u 2021. godini
@@ -222,7 +222,7 @@ plot(whr2021$`Social support`, whr2021$`Ladder score`,
 lines(whr2021$`Social support`, fitSocialSupport$fitted.values)
 
 ```
-\newline
+\eject
 Iz dobivenih grafova bi mogli naslutiti da postoji veza između ulaznih varijabli i izlazne. Da bi nastavili daljnju analizu potrebno je provjeriti pretpostavke modela o regresorima i rezidualima. One ne smiju biti jako narušene. Mora vrijediti normalnost reziduala i homogenost varijance te regresori ne smiju biti jako korelirani kada imamo više regresora. Normalnost reziduala ćemo provjeriti grafički pomoću kvantil-kvantil plota te statistički pomoću Lillieforsove inačice KS testa normalnosti.
 ```{r}
 qqnorm(rstandard(fitGDP))
@@ -233,14 +233,14 @@ lillie.test(rstandard(fitGDP))
 
 ```
 Iz kvantil-kvantil grafa možemo naslutiti normalnost reziduala. Velika p-vrijednost kod Lillieforsovog testa govori kako ne možemo odbaciti hipotezu da podaci dolaze iz normalne distribucije
-
+\eject
 Izračunajmo sada mjere za model jednostavne linearne regresije za ulaznu varijabu "Logged GDP per capita" i izlaznu varijabu "Ladder score".
 ```{r}
 summary(fitGDP)
 ```
 R-kvadrat (koeficijent determinacije) za dobiveni model iznosi 0.6237 što nam govori koliki postotak varijance u izlaznoj varijabli("Ladder score") je estimirani linearni model opisao.  F-statistika nam služi za ispitivanje signifikantnosti modela. 
 
-Analogno računamo za preostale nezavisne varijable.
+Analogno računamo za preostale varijable.
 Pogledajmo koliko iznose R-kvadrat i F-statistika za preostale jednostavne modele linearne regresije.
 ```{r include=FALSE}
 summary(fitSocialSupport)
@@ -262,7 +262,7 @@ lillie.test(rstandard(fitWealthGini))
 knitr::include_graphics("linRegJed.png")
 ```
 Prema vrijednostima R-kvadrat i F-statistike kao tri najznačajnija regresora kod jednostruke regresije su redom "Logged GDP per capita", "Healthy life expectancy" i "Social support". Varijabla "Generosity" se pokazala kao najmanje značajna te ju vjeroatno ni nećemo koristiti u višestrukoj linearnoj regresiji.
-
+\eject
 Prije nego što krenemo s višestukom linearnom regresijom moramo provjeriti korelaciju među ulaznim varijablama.Ne provjeravamo korelaciju za Income Gini i Wealth Gini jer nedostaju podaci za pojedine države.
 ```{r fig.width = 10, fig.height= 10, warning=FALSE, message=FALSE}
 library("corrplot")
@@ -273,10 +273,10 @@ corrplot(num, method="number")
 Varijabla "Logged GDP per capita" koja je u jednostavnoj linearnoj regresiji bila najznačajnija je jako korelirana s druge dvije najznačajnije ("Social support" i "Healthy life expectancy"). Zbog toga pri izgradnji modela višestruke linearne regresije možda nije potrebno koristiti sve 3 navedene varijable. Pokušajmo izgraditi model tako da R-kvadrat i F-statistika budu najveći. 
 
 Nadalje, probat ćemo iskoristiti i kategorijsku varijablu "Regional indicator", no prije moramo provjeriti:
-- radi li se o varijabli na nominalnoj ili ordinalnoj skali,
-- ima li varijabla linearan efekt na izlaznu varijablu,
-- predstavlja li određena kategorijska varijabla nešto što je određenom metričkom varijablom već predstavljeno.
-
+\newline- radi li se o varijabli na nominalnoj ili ordinalnoj skali,
+\newline- ima li varijabla linearan efekt na izlaznu varijablu,
+\newline- predstavlja li određena kategorijska varijabla nešto što je određenom metričkom varijablom već predstavljeno.
+\eject
 U slučaju varijable "Regional indicator", ona je na nominalnoj skali,te nije predstavljena nekom metričkom varijablom. Za provjeru linearanog efekta iskoristit ćemo box-plot.
 
 ```{r provjera linearnog efekta na izlaznu varijablu}
@@ -290,46 +290,60 @@ whr2021 %>%
 ```
 
 Iz priloženog boxplota vidimo neki linearan trend, stoga ovu varijablu možemo iskoristiti u daljnjoj analizi.
+\eject
 
 ```{r tražimo koje varijable najviše utječu na sreću}
 fitAll= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support` + `Healthy life expectancy` + `Freedom to make life choices` + `Generosity` + `Perceptions of corruption` + `Income Gini` + `Wealth Gini`, data = whr2021)
 summary((fitAll))
 ```
-Na temelju regresije sa svim varijablama, možemo zaključiti da Social support, Freedom to make life choices i Perception of corruption najviše djeluju na osjećaj sreće. Treba pronaći model koji opisuje veći postotak varijance, ali uz što manji broj regresora.
+Na temelju regresije sa svim varijablama, možemo zaključiti da "Logged GDP per capita", "Social support", "Healthy life expectancy", "Freedom to make life choices" i "Perception of corruption" najviše djeluju na osjećaj sreće. Treba pronaći model koji opisuje veći postotak varijance, ali uz što manji broj regresora.
+\eject
+Referencirajući se na tablicu koju smo dobili jednostavnom lin. regresijom, probat ćemo iskoristiti jedan ili dva od tri najznačajnija ("Logged GDP per capita", "Social support", "Healthy life expectancy"), te  "Freedom to make life choices" i "Perception of corruption" koje koristimo u svim.
 ```{r}
-fitm1= lm(`Ladder score` ~ `Social support`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+fitm1= lm(`Ladder score` ~ `Social support`+`Freedom to make life choices` + 
+            `Perceptions of corruption`, data = whr2021)
 summary(fitm1)
 
-fitm2= lm(`Ladder score` ~ `Healthy life expectancy`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+fitm2= lm(`Ladder score` ~ `Healthy life expectancy`+`Freedom to make life choices` + 
+            `Perceptions of corruption`, data = whr2021)
 summary((fitm2))
 
-fitm3= lm(`Ladder score` ~ `Logged GDP per capita`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+fitm3= lm(`Ladder score` ~ `Logged GDP per capita`+`Freedom to make life choices` + 
+            `Perceptions of corruption`, data = whr2021)
 summary((fitm3))
 
-fitm4= lm(`Ladder score` ~ `Logged GDP per capita` + `Healthy life expectancy`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+fitm4= lm(`Ladder score` ~ `Logged GDP per capita` + `Healthy life expectancy`+
+            `Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
 summary((fitm4))
 
-fitm5= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+fitm5= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support`+
+            `Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
 summary((fitm5))
 
-fitm6= lm(`Ladder score` ~ `Social support` + `Healthy life expectancy`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+fitm6= lm(`Ladder score` ~ `Social support` + `Healthy life expectancy`+
+            `Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
 summary((fitm6))
 
-fitm7= lm(`Ladder score` ~ `Logged GDP per capita`+`Social support` + `Healthy life expectancy`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+fitm7= lm(`Ladder score` ~ `Logged GDP per capita`+`Social support` + 
+            `Healthy life expectancy`+`Freedom to make life choices` + 
+            `Perceptions of corruption`, data = whr2021)
 summary((fitm7))
 ```
 Iz priloženog vidimo, uključivši svih 5 značajnih varijabli dobivamo najveći R-squared. No, približno jednak rezultat dobivamo ako ne uključimo "Healthy life expectancy", što je posljedica koreliranosti između varijabli 
 "Logged GDP per capita", "Social support" i "Healthy life expectancy". Također uočimo da u slučaju kada koristimo "Logged GDP per capita" i "Social support" u odnosu na "Logged GDP per capita" i "Healthy life expectancy" dobivamo bolji R-squared, dok je R-squared kod jednostavne regresije pojedinačnih varijabli veći u slučaju "Healthy life expectancy" nego "Social support". Razlog opet leži u većoj koreliranosti.
-
+\eject
 Nadalje, probajmo smanjiti broj parametara u modelu linearne regresije. Pokušat ćemo kombinirati zadnja dva parametra iz modela fit1.
 ```{r smanjenje broja parametara}
-fit1= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support`+`Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
+fit1= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support`+
+           `Freedom to make life choices` + `Perceptions of corruption`, data = whr2021)
 summary((fit1))
 
-fit2= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support`+`Freedom to make life choices` , data = whr2021)
+fit2= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support`+
+           `Freedom to make life choices` , data = whr2021)
 summary((fit2))
 
-fit3= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support`+ `Perceptions of corruption`, data = whr2021)
+fit3= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support`+ 
+           `Perceptions of corruption`, data = whr2021)
 summary((fit3))
 
 fit4= lm(`Ladder score` ~ `Logged GDP per capita` + `Social support`, data = whr2021)
@@ -340,7 +354,8 @@ Iz ovoga proizlazi da originalan model ne možemo reducirati jer gubimo u R-squa
 
 Pokušajmo sada u model uvrstiti varijablu "Regional indicator" koja je kategorijska.
 ```{r}
-fit_reg = lm(`Ladder score` ~ `Logged GDP per capita` + `Social support` + `Freedom to make life choices`+ `Regional indicator`, data=whr2021)
+fit_reg = lm(`Ladder score` ~ `Logged GDP per capita` + `Social support` + 
+               `Freedom to make life choices`+ `Regional indicator`, data=whr2021)
 summary(fit_reg)
 ```
 Vidimo da R sam stvara tzv. "dummy" varijable za kategorijsku varijablu "Regional indicator". Neke novo stvorene "dummy" varijable imaju veliku p-vrijednost što ukazuje da nisu značajne, no neke imaju malu p-vrijednost te se koeficijent determinacije povećao u usporedbi s ostalim modelima, ali se F-statistika smanjila.
@@ -361,7 +376,7 @@ cat('Prosječan Ladder score zemalja iz Zapadne Europe ', mean(western_europe$`L
 cat('Prosječan Ladder score zemalja iz Srednje i Istočne Europe', mean(central_eastern_europe$`Ladder score`), '\n')
 ```
 Histogrami za za Zapadnu i Centralnu/Istočnu Europu:
-```{r}
+```{r, ,fig.width=4.7, fig.height=3.7}
 h = hist(western_europe$`Ladder score`,
          main="Ladder score Western Europe",
          xlab="Ladder score",
@@ -369,7 +384,9 @@ h = hist(western_europe$`Ladder score`,
          col="blue",
          breaks = 20
          )
-
+```
+\eject
+```{r, ,fig.width=4.7, fig.height=3.7}
 h = hist(central_eastern_europe$`Ladder score`,
          main="Ladder score Central and Eastern Europe",
          xlab="Ladder score",
@@ -378,12 +395,15 @@ h = hist(central_eastern_europe$`Ladder score`,
          breaks = 20
          )
 ```
+
 Pravokutni dijagram za Zapadnu i Centralnu/Istočnu Europu:
-```{r}
+```{r,fig.width=4.7, fig.height=3.7}
 boxplot(western_europe$`Ladder score`,central_eastern_europe$`Ladder score`,
         main='Ladder score box-plot',
-        ylab='Ladder score', xlab="Regional indicator", names = c("Western Europe", "Central and Eastern Europe"))
+        ylab='Ladder score', xlab="Regional indicator", names = c("Western Europe", 
+                                                                  "Central and Eastern Europe"))
 ```
+\eject
 Postoje indikacije da bi ljudi iz zemalja Zapadne Europe trebali biti sretniji od ljudi iz zemalja Srednje i Istočne Europe.
 
 Postavimo sljedeće hipoteze: \
@@ -394,7 +414,9 @@ Ovakvo ispitivanje možemo provesti t-testom. Kako bi mogli provesti test, moram
 ```{r}
 qqnorm(western_europe$`Ladder score`, pch = 1, frame = FALSE,main='Western Europe')
 qqline(western_europe$`Ladder score`, col = "steelblue", lwd = 2)
-
+```
+\eject
+```{r}
 qqnorm(central_eastern_europe$`Ladder score`, pch = 1, frame = FALSE,main='Central and Eastern Europe')
 qqline(central_eastern_europe$`Ladder score`, col = "steelblue", lwd = 2)
 ```
@@ -405,7 +427,7 @@ lillie.test(western_europe$`Ladder score`)
 lillie.test(central_eastern_europe$`Ladder score`)
 ```
 Iz qq-plota ne možemo zaključiti normalnost podataka. Velika p-vrijednost kod Lillieforsovog testa govori kako ne možemo odbaciti hipotezu da podaci dolaze iz normalne distribucije.
-
+\eject
 Pogledajmo vrijednost varijanci oba uzorka.
 ```{r}
 var(western_europe$`Ladder score`)
@@ -414,22 +436,24 @@ var(central_eastern_europe$`Ladder score`)
 var.test(western_europe$`Ladder score`, central_eastern_europe$`Ladder score`)
 ```
 
-p-vrijednost od 0.2498 nam govori da ne odbacujemo hipotezu da su varijance uzoraka jednake.
+P-vrijednost od 0.2498 nam govori da ne odbacujemo hipotezu da su varijance uzoraka jednake.
 
 Provedimo sada t-test uz pretpostavku jednakosti varijanci.
 
 ```{r}
-t.test(western_europe$`Ladder score`, central_eastern_europe$`Ladder score`, alt = "greater", var.equal = TRUE)
+t.test(western_europe$`Ladder score`, central_eastern_europe$`Ladder score`, 
+       alt = "greater", var.equal = TRUE)
 
 ```
-Zbog male p-vrijednosti možemo odbaciti hipotezu $H_0$ u korist alternative da je Ladder score veći u Zapadnoj Europi od onog u Srednjoj i Istočnoj Europi.
-
+Zbog male p-vrijednosti možemo odbaciti hipotezu $H_0$ u korist alternative da je "Ladder score" veći u Zapadnoj Europi od onog u Srednjoj i Istočnoj Europi.
 ## Usporedba sredina razina sreće triju regija
 ```{r}
 ce_europe = whr2021[whr2021$`Regional indicator` == "Central and Eastern Europe",]
 l_america = whr2021[whr2021$`Regional indicator` == "Latin America and Caribbean",]
 e_asia = whr2021[whr2021$`Regional indicator` == "East Asia",]
-regions = whr2021[whr2021$`Regional indicator` == "Central and Eastern Europe" | whr2021$`Regional indicator` == "Latin America and Caribbean" | whr2021$`Regional indicator` == "East Asia", ]
+regions = whr2021[whr2021$`Regional indicator` == "Central and Eastern Europe" 
+                  | whr2021$`Regional indicator` == "Latin America and Caribbean" 
+                  | whr2021$`Regional indicator` == "East Asia", ]
 
 boxplot(ce_europe$`Ladder score`, l_america$`Ladder score`, e_asia$`Ladder score`)
 
@@ -448,6 +472,7 @@ lillie.test(e_asia$`Ladder score`)
 
 
 ```
+\eject
 Na temelju rezultata Lillieforceovih testova, možemo zaključiti da na razini značajnosti od 1% sve populacije dolaze iz normalne razdiobe. Nadalje, provest ćemo test homogenosti varijaci populacija:
 $$ \begin{aligned}
   H_0 & : \sigma_1^2 = \sigma_2^2 = \sigma_3^2 \\
