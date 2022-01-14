@@ -361,7 +361,7 @@ summary(fit_reg)
 Vidimo da R sam stvara tzv. "dummy" varijable za kategorijsku varijablu "Regional indicator". Neke novo stvorene "dummy" varijable imaju veliku p-vrijednost što ukazuje da nisu značajne, no neke imaju malu p-vrijednost te se koeficijent determinacije povećao u usporedbi s ostalim modelima, ali se F-statistika smanjila.
 \eject
 
-# Postoje li razlike u iskazanoj sreći medu različitim regijama?
+# Postoje li razlike u iskazanoj sreći među različitim regijama?
 
 Zanima nas ima li značajnih razlika u sredinama razina sreće u različitim regijama. Prvo ćemo usporediti razine sreće u Srednjoj i Istočnoj Europi pomoću t-testa, a zatim razine sreće u tri svjetske regije pomoću ANOVA testa.
 
@@ -446,6 +446,7 @@ t.test(western_europe$`Ladder score`, central_eastern_europe$`Ladder score`,
 
 ```
 Zbog male p-vrijednosti možemo odbaciti hipotezu $H_0$ u korist alternative da je "Ladder score" veći u Zapadnoj Europi od onog u Srednjoj i Istočnoj Europi.
+
 ## Usporedba sredina razina sreće triju regija
 ```{r}
 ce_europe = whr2021[whr2021$`Regional indicator` == "Central and Eastern Europe",]
