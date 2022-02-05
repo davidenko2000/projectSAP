@@ -1,2 +1,3 @@
-# projectSAP
-Project in R language.
+# Project Statistical data analysis
+Project in R language. 
+Extracting useful information from World Happiness Report.
